@@ -1,42 +1,38 @@
 #!/usr/bin/env bash
 
+# Exit immediately if a command exits with non-zero status
 set -e
 
-# Directories and image details
-APP_DIR=$(dirname "${0}")/..
-HOMELAB_DIR="${APP_DIR}"/../..
-APP_NAME="command-line-toolbox"
-DOCKER_IMAGE="${APP_NAME}-docker"
-DOCKER_TAG="0.1.0"
-USER_NAME="user"
+# this script builds the docker image using podman and pushes it to registry
 
-# Load environment variables (e.g., DOCKER_REPO, GITLAB_USER, GITLAB_TOKEN)
-source "${HOMELAB_DIR}"/.env
+DIR=$(dirname "$0")/..
+cd "$DIR" || exit 1
 
-# Log in to the Docker repository
-docker login "${DOCKER_REPO}" -u "${GITLAB_USER}" -p "${GITLAB_TOKEN}"
 
-# Ensure Docker Buildx is available
-if ! docker buildx version >/dev/null 2>&1; then
-    echo "Docker Buildx is not available. Please update Docker to a version that supports Buildx." >&2
-    exit 1
+if [ -f ".env" ]; then
+    source .env
 fi
 
-# Create and use a multi-arch builder if it does not exist
-BUILDER_NAME="multiarch-builder"
-if ! docker buildx ls | grep -q "$BUILDER_NAME"; then
-    echo "Creating multi-architecture builder named '$BUILDER_NAME'..."
-    docker buildx create --name "$BUILDER_NAME" --use
-    docker buildx inspect --bootstrap
-fi
+# Set image name and tag
+LOCAL_IMAGE_NAME="localhost/$IMAGE_NAME:$TAG"
+REMOTE_IMAGE_NAME="$DOCKER_REGISTRY/$IMAGE_NAME:$TAG"
 
-# Build and push the multi-architecture image for:
-#  - linux/386      (Linux on Intel 32-bit)
-#  - linux/amd64    (Linux on AMD/Intel 64-bit)
-#  - darwin/amd64   (MacOS on Intel)
-docker buildx build \
-  --platform linux/arm64,linux/amd64 \
-  --build-arg USER_NAME="${USER_NAME}" \
-  -t "${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}" \
-  "${APP_DIR}" \
-  --push
+echo "Building $LOCAL_IMAGE_NAME with Podman..."
+
+# Build the image with fully qualified image name to avoid short-name resolution error
+podman build --format docker -t "$LOCAL_IMAGE_NAME" -f Dockerfile .
+
+echo "Build completed successfully!"
+
+# Tag the image for the registry
+echo "Tagging image as $REMOTE_IMAGE_NAME..."
+podman tag "$LOCAL_IMAGE_NAME" "$REMOTE_IMAGE_NAME"
+
+# Login to registry using saved credentials
+echo "Logging into registry $DOCKER_REGISTRY..."
+echo "$NEXUS_PASSWORD" | podman login -u "$NEXUS_USERNAME" --password-stdin "$DOCKER_REGISTRY"
+
+# Push the image
+echo "Pushing image to $REMOTE_IMAGE_NAME..."
+podman push "$REMOTE_IMAGE_NAME"
+echo "Image successfully pushed to $REMOTE_IMAGE_NAME"
