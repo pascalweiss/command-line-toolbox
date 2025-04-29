@@ -28,7 +28,7 @@ build-docker-image:
 
 build-helm-chart:
   stage: build
-  image: helm.pwlab.dev/build-tools:0.1.0
+  image: registry.pwlab.dev/build-tools:0.1.0
   tags:
     - kubernetes
   before_script:
