@@ -11,4 +11,4 @@ echo $NEXUS_PASSWORD | helm registry login "${HELM_LOGIN_URL}" --username $NEXUS
 
 # Push the chart to the registry
 echo "Publishing chart to ${HELM_REPO}"
-helm push "${PACKAGE_FOLDER}/digital-garden-${TAG_VERSION}.tgz" "${HELM_REPO}"
+helm push "${PACKAGE_FOLDER}/${$IMAGE_NAME}-${TAG_VERSION}.tgz" "${HELM_REPO}"
