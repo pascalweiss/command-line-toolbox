@@ -2,7 +2,7 @@
 set -e
 
 # get directory of chart folder
-CHART_DIR=$(dirname "$0")/../chart
+CHART_DIR=$(dirname "$0")/..
 PACKAGE_FOLDER=${CHART_DIR}/package
 TAG_VERSION=$(yq -r '.version' "${CHART_DIR}"/Chart.yaml)
 
