@@ -25,3 +25,14 @@ build-docker-image:
     - *default-before-script
   script:
     - $CI_PROJECT_DIR/run/build_and_push.sh
+
+build-helm-chart:
+  stage: build
+  image: helm.pwlab.dev/build-tools:0.1.0
+  tags:
+    - kubernetes
+  before_script:
+    - *default-before-script
+  script:
+    - $CI_PROJECT_DIR/run/helm_package.sh
+    - $CI_PROJECT_DIR/run/helm_publish.sh
