@@ -57,6 +57,30 @@ This repository includes Helm chart packaging and publishing:
    ./_run/helm_publish.sh
    ```
 
+## Upgrading the Image
+
+When releasing a new version of the image, you need to update the version in the following files:
+
+1. Update image tag in `values.yaml`:
+   ```yaml
+   image:
+     tag: "x.y.z"  # Update this version number
+   ```
+
+2. Update version and appVersion in `Chart.yaml`:
+   ```yaml
+   version: x.y.z  # Chart version - increment when chart changes
+   appVersion: "x.y.z"  # Application version - match with image tag
+   ```
+
+3. Update TAG variable in `.gitlab-ci.yml`:
+   ```yaml
+   variables:
+     TAG: x.y.z  # Update this version number
+   ```
+
+After updating these files, commit the changes and push to trigger the CI/CD pipeline.
+
 ## Environment Variables
 
 | Variable | Description |
