@@ -30,3 +30,13 @@ build-helm-chart:
   script:
     - $CI_PROJECT_DIR/run/helm_package.sh
     - $CI_PROJECT_DIR/run/helm_publish.sh
+
+secret-detection:
+  stage: test
+  image: zricethezav/gitleaks:latest 
+  tags: 
+    - kubernetes
+  script :
+    - *default-before-script
+    - gitleaks detect --verbose ,--source=$CI_PROJECT_DIR 
+    
