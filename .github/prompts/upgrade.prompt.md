@@ -18,3 +18,8 @@ When releasing a new version of the chart and the image, you need to update the 
    variables:
      TAG: x.y.z  # Update this version number
    ```
+
+5. Commit the changes:
+   ```bash
+   git add Chart.yaml values.yaml .gitlab-ci.yml
+   git commit -m "Upgrade version x.y.z+1"
